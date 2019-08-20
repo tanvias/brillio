@@ -4,6 +4,7 @@ create_scratch_org=""
 deploy_toexisting_org=""
 Org_user_alias=""
 devhub="vscodeOrg"
+deploy_success=""
 
 # Quick select menu 
 echo "**************"
@@ -54,10 +55,11 @@ if [ $create_scratch_org ]; then
 	then 
 		echo "Scratch org with alias $Org_user_alias created" 
 		
-		sfdx force:source:deploy -u $Org_user_alias	-x test/sfdxdemo/manifest/package.xml
-		
+		sfdx force:source:deploy -u $Org_user_alias	-x manifest/package.xml
+		deploy_success="y"
 		echo "Deploying to scratch org" 
 	else 
+		
 		echo -e "$ERROR_MARKER Problem creating scratch org with alias $Org_user_alias" 
 		exit 1
 	fi 
@@ -78,8 +80,9 @@ if [ $deploy_toexisting_org ] ; then
 	
 	echo "Deploying to existing org with alias $Org_user_alias" 
 	
-	if sfdx force:source:deploy -u $Org_user_alias	-m "ApexClass"
+	if sfdx force:source:deploy -u $Org_user_alias	-x manifest/package.xml
 	then 
+		deploy_success="y"
 		echo "Deployed to $Org_user_alias" 
 	else 
 		echo -e "$ERROR_MARKER Problem deploying to username $Org_user_alias" 
@@ -88,6 +91,34 @@ if [ $deploy_toexisting_org ] ; then
 else 
 	echo "Not deploying to org" 
 fi 
+
+#Assign permission set to user 
+if [ $deploy_success ] ; then
+echo "Creating seed data and assigning permission set" 
+
+	if sfdx force:apex:execute -f config/test_data_insert.apex -u $Org_user_alias
+	then
+		echo "Created seed data successfully" 
+	else 
+		echo -e "$ERROR_MARKER Problem creating data" 
+		exit 1 
+	fi
+
+	if sfdx force:user:permset:assign --permsetname Demo_Permission_Set --targetusername $Org_user_alias
+	then 
+		echo "Permission set assigned successfully" 
+	else 
+		 echo -e "$ERROR_MARKER Problem assigning permission set to org alias $Org_user_alias"
+		 exit 1
+	fi
+	
+	
+else 
+	echo "Not creating seed data and not assigning permission set" 
+fi 
+
+
+
 
 	
 
