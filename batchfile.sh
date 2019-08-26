@@ -3,8 +3,8 @@
 create_scratch_org=""
 deploy_toexisting_org=""
 Org_user_alias=""
-devhub="vscodeOrg"
-deploy_success=""
+devhub="devhub"
+deploy_success="n"
 
 # Quick select menu 
 echo "**************"
@@ -55,11 +55,11 @@ if [ $create_scratch_org ]; then
 	then 
 		echo "Scratch org with alias $Org_user_alias created" 
 		
-		sfdx force:source:deploy -u $Org_user_alias	-x manifest/package.xml
+		sfdx force:source:push -u $Org_user_alias	
 		deploy_success="y"
 		echo "Deploying to scratch org" 
 	else 
-		
+		deploy_success="n"
 		echo -e "$ERROR_MARKER Problem creating scratch org with alias $Org_user_alias" 
 		exit 1
 	fi 
