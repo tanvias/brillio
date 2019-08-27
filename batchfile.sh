@@ -3,8 +3,10 @@
 create_scratch_org=""
 deploy_toexisting_org=""
 Org_user_alias=""
-devhub="devhub"
+devhub="devhuborg"
 deploy_success="n"
+git_branch=""
+response=""
 
 # Quick select menu 
 echo "**************"
@@ -36,6 +38,20 @@ do
 	esac
 done	
 
+#Select github branch to deploy 
+
+ 
+	echo "Do you want to use master branch ? Type Y to use this or enter the branch name you want" 
+	read response 
+	if [ $response != "y" ]; then 
+		git_branch=$response
+	else 
+		git_branch=master
+	fi 
+	echo "You selected $git_branch branch"
+	
+
+
 #Create Scratch Org 
 if [ $create_scratch_org ]; then 
 	while [ ! -n "$Org_user_alias"  ]
@@ -45,7 +61,7 @@ if [ $create_scratch_org ]; then
 	done
 	
 	rm -rf test || exist 1
-	git clone -b master -- "https://github.com/kpapasani/brillio.git" test/sfdxdemo/ || exit 1
+	git clone -b $git_branch -- "https://github.com/kpapasani/brillio.git" test/sfdxdemo/ || exit 1
 	cd  test/sfdxdemo/ || exit
 	
 	echo "Creating scratch org with alias $Org_user_alias"
@@ -57,25 +73,26 @@ if [ $create_scratch_org ]; then
 		
 		sfdx force:source:push -u $Org_user_alias	
 		deploy_success="y"
-		echo "Deploying to scratch org" 
+		echo "Deploying to scratch org"
+		
 	else 
 		deploy_success="n"
 		echo -e "$ERROR_MARKER Problem creating scratch org with alias $Org_user_alias" 
 		exit 1
 	fi 
-else 
-	echo "Not creating scratch org" 
+ 
+	
 fi 	
 	
 # Deploy to existing org 
 if [ $deploy_toexisting_org ] ; then 
 	while [ ! -n "$Org_user_alias"  ]
 	do
-		echo "Please enter your org alias:"
+		echo "Please enter your org username:"
 		read Org_user_alias
 	done
 	rm -rf test || exist 1
-	git clone -b master -- "https://github.com/kpapasani/brillio.git" test/sfdxdemo/ || exit 1
+	git clone -b $git_branch -- "https://github.com/kpapasani/brillio.git" test/sfdxdemo/ || exit 1
 	cd  test/sfdxdemo/ || exit
 	
 	echo "Deploying to existing org with alias $Org_user_alias" 
@@ -84,12 +101,12 @@ if [ $deploy_toexisting_org ] ; then
 	then 
 		deploy_success="y"
 		echo "Deployed to $Org_user_alias" 
+		
 	else 
 		echo -e "$ERROR_MARKER Problem deploying to username $Org_user_alias" 
 		exit 1
 	fi
-else 
-	echo "Not deploying to org" 
+
 fi 
 
 #Assign permission set to user 
@@ -107,6 +124,7 @@ echo "Creating seed data and assigning permission set"
 	if sfdx force:user:permset:assign --permsetname Demo_Permission_Set --targetusername $Org_user_alias
 	then 
 		echo "Permission set assigned successfully" 
+		sfdx force:org:open -u $Org_user_alias
 	else 
 		 echo -e "$ERROR_MARKER Problem assigning permission set to org alias $Org_user_alias"
 		 exit 1

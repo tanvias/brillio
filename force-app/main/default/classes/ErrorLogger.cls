@@ -62,28 +62,8 @@ public virtual class ErrorLogger{
       }
   }
 
-  //to insert error log from aura 
-  /*public static void createLog(String log){
-      Id userId = UserInfo.getUserId(); 
-      ErrorLog_Permissions__c elp = ErrorLog_Permissions__c.getInstance(userId); 
-      if(elp.Create_ErrorLog__c){
-        ErrorLogger errorLoggerInstance; 
-        errorLoggerinstance = (ErrorLogger)System.JSON.deserialize(log, ErrorLogger.class); 
-        system.debug('ErrorLoggerInstance'+errorLoggerInstance);
-        Error_Log__c logToCreate = new Error_Log__c(); 
-        logToCreate.Error_Message__c = errorLoggerInstance.ex.getMessage(); 
-        logToCreate.Line_Number__c = errorLoggerInstance.ex.getLineNumber(); 
-        logToCreate.Stack_Trace__c = errorLoggerInstance.ex.getStackTraceString(); 
-        logToCreate.Error_Type__c = errorLoggerInstance.ex.getTypeName(); 
-        logToCreate.Class_Name__c = errorLoggerInstance.className; 
-        logToCreate.Method_Name__c = errorLoggerInstance.methodName; 
-        logToCreate.Record_Context__c = errorLoggerInstance.recordContext;
-
-        Database.insert(logToCreate, FALSE);
-      }
-  }*/
   
-  public static Boolean checkGlobalSettings(Id UserId){
+  public static Boolean checkGlobalSettings(Id userId){
       GlobalSettings__c gs = GlobalSettings__c.getInstance(userId); 
       if(!gs.GenerateLog__c){
           gs = GlobalSettings__c.getInstance(); 
